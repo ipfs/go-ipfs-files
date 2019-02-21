@@ -20,11 +20,12 @@ type MultiFileReader struct {
 	files []DirIterator
 	path  []string
 
-	currentFile Node
-	buf         bytes.Buffer
-	mpWriter    *multipart.Writer
-	closed      bool
-	mutex       *sync.Mutex
+	currentFile  Node
+	buf          bytes.Buffer
+	mpWriter     *multipart.Writer
+	closed       bool
+	mutex        *sync.Mutex
+	fieldCounter int
 
 	// if true, the data will be type 'multipart/form-data'
 	// if false, the data will be type 'multipart/mixed'
@@ -88,7 +89,10 @@ func (mfr *MultiFileReader) Read(buf []byte) (written int, err error) {
 			// write the boundary and headers
 			header := make(textproto.MIMEHeader)
 			filename := url.QueryEscape(path.Join(path.Join(mfr.path...), entry.Name()))
-			header.Set("Content-Disposition", fmt.Sprintf("file; filename=\"%s\"", filename))
+			name := fmt.Sprintf("data%d", mfr.fieldCounter)
+			mfr.fieldCounter++
+			header.Set("Content-Disposition",
+				fmt.Sprintf("form-data; name=\"%s\"; filename=\"%s\"", name, filename))
 
 			var contentType string
 
