@@ -93,8 +93,6 @@ func (mfr *MultiFileReader) Read(buf []byte) (written int, err error) {
 				dispositionPrefix = "form-data; name=\"file\""
 			}
 
-			header.Set("Content-Disposition", fmt.Sprintf("%s; filename=\"%s\"", dispositionPrefix, filename))
-
 			var contentType string
 
 			switch f := entry.Node().(type) {
@@ -115,7 +113,14 @@ func (mfr *MultiFileReader) Read(buf []byte) (written int, err error) {
 			header.Set("Content-Type", contentType)
 			if rf, ok := entry.Node().(FileInfo); ok {
 				header.Set("abspath", rf.AbsPath())
+				// attach file size to content-disposition when available
+				// according to https://tools.ietf.org/html/rfc2183
+				if stat := rf.Stat(); stat != nil {
+					dispositionPrefix += fmt.Sprintf("; size=%d", stat.Size())
+				}
 			}
+
+			header.Set("Content-Disposition", fmt.Sprintf("%s; filename=\"%s\"", dispositionPrefix, filename))
 
 			_, err := mfr.mpWriter.CreatePart(header)
 			if err != nil {
