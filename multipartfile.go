@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -18,7 +19,8 @@ const (
 	applicationSymlink   = "application/symlink"
 	applicationFile      = "application/octet-stream"
 
-	contentTypeHeader = "Content-Type"
+	contentTypeHeader        = "Content-Type"
+	contentDispositionHeader = "Content-Disposition"
 )
 
 type multipartDirectory struct {
@@ -101,10 +103,24 @@ func (w *multipartWalker) nextFile() (Node, error) {
 
 		return NewLinkFile(string(out), nil), nil
 	default:
-		return &ReaderFile{
+		rf := &ReaderFile{
 			reader:  part,
 			abspath: part.Header.Get("abspath"),
-		}, nil
+		}
+		cdh := part.Header.Get(contentDispositionHeader)
+		_, params, err := mime.ParseMediaType(cdh)
+		if err != nil {
+			return nil, err
+		}
+		// ignore if size is not available
+		if size, ok := params["size"]; ok {
+			fsize, err := strconv.ParseInt(size, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			rf.fsize = fsize
+		}
+		return rf, nil
 	}
 }
 
