@@ -6,6 +6,8 @@ import (
 	"io"
 	"path"
 	"time"
+
+	uio "github.com/TRON-US/go-unixfs/io"
 )
 
 type TarWriter struct {
@@ -23,9 +25,12 @@ func (w *TarWriter) writeDir(f Directory, fpath string) error {
 	if err := writeDirHeader(w.TarW, fpath); err != nil {
 		return err
 	}
-
 	it := f.Entries()
+
 	for it.Next() {
+		if it.Name() == uio.SmallestString {
+			continue
+		}
 		if err := w.WriteFile(it.Node(), path.Join(fpath, it.Name())); err != nil {
 			return err
 		}
