@@ -6,8 +6,10 @@ import (
 	"io"
 	"path"
 	"time"
+)
 
-	uio "github.com/TRON-US/go-unixfs/io"
+const (
+	SmallestString = "\u0000"
 )
 
 type TarWriter struct {
@@ -28,7 +30,7 @@ func (w *TarWriter) writeDir(f Directory, fpath string) error {
 	it := f.Entries()
 
 	for it.Next() {
-		if it.Name() == uio.SmallestString {
+		if it.Name() == SmallestString {
 			continue
 		}
 		if err := w.WriteFile(it.Node(), path.Join(fpath, it.Name())); err != nil {
