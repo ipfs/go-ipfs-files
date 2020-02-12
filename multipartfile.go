@@ -233,7 +233,7 @@ func (it *multipartIterator) Next() bool {
 
 func getAbsRootPath(partPath string, dirPath string) (string, error) {
 	strs := strings.Split(partPath, dirPath)
-	if len(strs) == 1 {
+	if len(strs) <= 1 {
 		return "", fmt.Errorf("can not find dir path [%s] from part path [%s] ", partPath, dirPath)
 	}
 	return strs[0] + dirPath, nil
