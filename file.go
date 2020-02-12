@@ -57,6 +57,9 @@ type DirIterator interface {
 	// If previous call to Next() returned `true`, Err() is guaranteed to
 	// return nil
 	Err() error
+
+	// AbsRootPath returns the absolute path of the root directory.
+	AbsRootPath() (string, error)
 }
 
 // Directory is a special file which can link to any number of files.

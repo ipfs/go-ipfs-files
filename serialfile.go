@@ -105,6 +105,10 @@ func (it *serialIterator) Err() error {
 	return it.err
 }
 
+func (it *serialIterator) AbsRootPath() (string, error) {
+	return "", nil
+}
+
 func (f *serialFile) Entries() DirIterator {
 	return &serialIterator{
 		path:              f.path,
