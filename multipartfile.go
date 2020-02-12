@@ -249,11 +249,16 @@ func (it *multipartIterator) Err() error {
 }
 
 func (it *multipartIterator) AbsRootPath() (string, error) {
+	first := true
 	for {
 		more := it.Next()
 		if !more {
+			if first {
+				return "", nil
+			}
 			return "", errors.New("could not find any absolue root path. Possibly no file inside the directory")
 		}
+		first = false
 		if it.absRootPath != "" {
 			return it.absRootPath, nil
 		}
