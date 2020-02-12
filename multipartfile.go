@@ -1,6 +1,8 @@
 package files
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -32,8 +34,9 @@ type multipartDirectory struct {
 }
 
 type multipartWalker struct {
-	part   *multipart.Part
-	reader *multipart.Reader
+	part        *multipart.Part
+	reader      *multipart.Reader
+	currAbsPath string
 }
 
 func (m *multipartWalker) consumePart() {
@@ -103,9 +106,10 @@ func (w *multipartWalker) nextFile() (Node, error) {
 
 		return NewLinkFile(string(out), nil), nil
 	default:
+		absPath := part.Header.Get("abspath")
 		rf := &ReaderFile{
 			reader:  part,
-			abspath: part.Header.Get("abspath"),
+			abspath: absPath,
 		}
 		cdh := part.Header.Get(contentDispositionHeader)
 		_, params, err := mime.ParseMediaType(cdh)
@@ -120,6 +124,7 @@ func (w *multipartWalker) nextFile() (Node, error) {
 			}
 			rf.fsize = fsize
 		}
+		w.currAbsPath = absPath
 		return rf, nil
 	}
 }
@@ -158,9 +163,10 @@ func makeRelative(child, parent string) string {
 type multipartIterator struct {
 	f *multipartDirectory
 
-	curFile Node
-	curName string
-	err     error
+	curFile     Node
+	curName     string
+	err         error
+	absRootPath string
 }
 
 func (it *multipartIterator) Name() string {
@@ -213,8 +219,24 @@ func (it *multipartIterator) Next() bool {
 		// Finally, advance to the next file.
 		it.curFile, it.err = it.f.walker.nextFile()
 
+		//
+		if it.absRootPath == "" && it.f.walker.currAbsPath != "" && it.f.path != "/" {
+			var err error
+			if it.absRootPath, err = getAbsRootPath(it.f.walker.currAbsPath, it.f.path); err != nil {
+				it.err = err
+			}
+		}
+
 		return it.err == nil
 	}
+}
+
+func getAbsRootPath(partPath string, dirPath string) (string, error) {
+	strs := strings.Split(partPath, dirPath)
+	if len(strs) == 1 {
+		return "", fmt.Errorf("can not find dir path [%s] from part path [%s] ", partPath, dirPath)
+	}
+	return strs[0] + dirPath, nil
 }
 
 func (it *multipartIterator) Err() error {
@@ -224,6 +246,18 @@ func (it *multipartIterator) Err() error {
 		return nil
 	}
 	return it.err
+}
+
+func (it *multipartIterator) AbsRootPath() (string, error) {
+	for {
+		more := it.Next()
+		if !more {
+			return "", errors.New("could not find any absolue root path. Possibly no file inside the directory")
+		}
+		if it.absRootPath != "" {
+			return it.absRootPath, nil
+		}
+	}
 }
 
 func (f *multipartDirectory) Entries() DirIterator {
