@@ -1,15 +1,12 @@
 package files
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
 	"mime/multipart"
 	"net/url"
 	"path"
-	"strconv"
 	"strings"
 )
 
@@ -21,8 +18,7 @@ const (
 	applicationSymlink   = "application/symlink"
 	applicationFile      = "application/octet-stream"
 
-	contentTypeHeader        = "Content-Type"
-	contentDispositionHeader = "Content-Disposition"
+	contentTypeHeader = "Content-Type"
 )
 
 type multipartDirectory struct {
@@ -34,9 +30,8 @@ type multipartDirectory struct {
 }
 
 type multipartWalker struct {
-	part        *multipart.Part
-	reader      *multipart.Reader
-	currAbsPath string
+	part   *multipart.Part
+	reader *multipart.Reader
 }
 
 func (m *multipartWalker) consumePart() {
@@ -106,26 +101,10 @@ func (w *multipartWalker) nextFile() (Node, error) {
 
 		return NewLinkFile(string(out), nil), nil
 	default:
-		absPath := part.Header.Get("abspath")
-		rf := &ReaderFile{
+		return &ReaderFile{
 			reader:  part,
-			abspath: absPath,
-		}
-		cdh := part.Header.Get(contentDispositionHeader)
-		_, params, err := mime.ParseMediaType(cdh)
-		if err != nil {
-			return nil, err
-		}
-		// ignore if size is not available
-		if size, ok := params["size"]; ok {
-			fsize, err := strconv.ParseInt(size, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			rf.fsize = fsize
-		}
-		w.currAbsPath = absPath
-		return rf, nil
+			abspath: part.Header.Get("abspath"),
+		}, nil
 	}
 }
 
@@ -163,10 +142,13 @@ func makeRelative(child, parent string) string {
 type multipartIterator struct {
 	f *multipartDirectory
 
-	curFile     Node
-	curName     string
-	err         error
-	absRootPath string
+	curFile Node
+	curName string
+	err     error
+}
+
+func (it *multipartIterator) AbsRootPath() (string, error) {
+	return it.f.path, nil
 }
 
 func (it *multipartIterator) Name() string {
@@ -219,24 +201,8 @@ func (it *multipartIterator) Next() bool {
 		// Finally, advance to the next file.
 		it.curFile, it.err = it.f.walker.nextFile()
 
-		//
-		if it.absRootPath == "" && it.f.walker.currAbsPath != "" && it.f.path != "/" {
-			var err error
-			if it.absRootPath, err = getAbsRootPath(it.f.walker.currAbsPath, it.f.path); err != nil {
-				it.err = err
-			}
-		}
-
 		return it.err == nil
 	}
-}
-
-func getAbsRootPath(partPath string, dirPath string) (string, error) {
-	strs := strings.Split(partPath, dirPath)
-	if len(strs) <= 1 {
-		return "", fmt.Errorf("can not find dir path [%s] from part path [%s] ", partPath, dirPath)
-	}
-	return strs[0] + dirPath, nil
 }
 
 func (it *multipartIterator) Err() error {
@@ -248,25 +214,9 @@ func (it *multipartIterator) Err() error {
 	return it.err
 }
 
-func (it *multipartIterator) AbsRootPath() (string, error) {
-	first := true
-	for {
-		more := it.Next()
-		if !more {
-			if first {
-				return "", nil
-			}
-			return "", errors.New("could not find any absolue root path. Possibly no file inside the directory")
-		}
-		first = false
-		if it.absRootPath != "" {
-			return it.absRootPath, nil
-		}
-	}
-}
-
 func (f *multipartDirectory) Entries() DirIterator {
-	return &multipartIterator{f: f}
+	m := &multipartIterator{f: f}
+	return m
 }
 
 func (f *multipartDirectory) Close() error {
