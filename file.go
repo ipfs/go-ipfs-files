@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Error types
 var (
 	ErrNotDirectory = errors.New("file isn't a directory")
 	ErrNotReader    = errors.New("file isn't a regular file")
@@ -23,7 +24,7 @@ type Node interface {
 	Size() (int64, error)
 }
 
-// Node represents a regular Unix file
+// File represents a regular Unix file
 type File interface {
 	Node
 

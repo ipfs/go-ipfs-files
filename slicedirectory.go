@@ -15,6 +15,7 @@ func (e fileEntry) Node() Node {
 	return e.file
 }
 
+// FileEntry ...
 func FileEntry(name string, file Node) DirEntry {
 	return fileEntry{
 		name: name,
@@ -51,6 +52,7 @@ type SliceFile struct {
 	files []DirEntry
 }
 
+// NewMapDirectory ...
 func NewMapDirectory(f map[string]Node) Directory {
 	ents := make([]DirEntry, 0, len(f))
 	for name, nd := range f {
@@ -63,22 +65,27 @@ func NewMapDirectory(f map[string]Node) Directory {
 	return NewSliceDirectory(ents)
 }
 
+// NewSliceDirectory ...
 func NewSliceDirectory(files []DirEntry) Directory {
 	return &SliceFile{files}
 }
 
+// Entries ...
 func (f *SliceFile) Entries() DirIterator {
 	return &sliceIterator{files: f.files, n: -1}
 }
 
+// Close ...
 func (f *SliceFile) Close() error {
 	return nil
 }
 
+// Length ...
 func (f *SliceFile) Length() int {
 	return len(f.files)
 }
 
+// Size ...
 func (f *SliceFile) Size() (int64, error) {
 	var size int64
 

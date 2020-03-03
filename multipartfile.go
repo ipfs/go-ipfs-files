@@ -70,12 +70,12 @@ func NewFileFromPartReader(reader *multipart.Reader, mediatype string) (Director
 	}, nil
 }
 
-func (w *multipartWalker) nextFile() (Node, error) {
+func (m *multipartWalker) nextFile() (Node, error) {
 	part, err := w.getPart()
 	if err != nil {
 		return nil, err
 	}
-	w.consumePart()
+	m.consumePart()
 
 	contentType := part.Header.Get(contentTypeHeader)
 	if contentType != "" {
@@ -91,7 +91,7 @@ func (w *multipartWalker) nextFile() (Node, error) {
 		return &multipartDirectory{
 			part:   part,
 			path:   fileName(part),
-			walker: w,
+			walker: m,
 		}, nil
 	case applicationSymlink:
 		out, err := ioutil.ReadAll(part)
