@@ -13,7 +13,7 @@
 
 ## Documentation
 
-https://godoc.org/github.com/ipfs/go-ipfs-files
+https://pkg.go.dev/github.com/ipfs/go-ipfs-files
 
 ## Contribute
 
@@ -28,4 +28,3 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 ## License
 
 MIT
-
