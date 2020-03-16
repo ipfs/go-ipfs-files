@@ -18,14 +18,17 @@ type ReaderFile struct {
 	fsize int64
 }
 
+// NewBytesFile ...
 func NewBytesFile(b []byte) File {
 	return &ReaderFile{"", NewReaderFile(bytes.NewReader(b)), nil, int64(len(b))}
 }
 
+// NewReaderFile ...
 func NewReaderFile(reader io.Reader) File {
 	return NewReaderStatFile(reader, nil)
 }
 
+// NewReaderStatFile ...
 func NewReaderStatFile(reader io.Reader, stat os.FileInfo) File {
 	rc, ok := reader.(io.ReadCloser)
 	if !ok {
@@ -35,6 +38,7 @@ func NewReaderStatFile(reader io.Reader, stat os.FileInfo) File {
 	return &ReaderFile{"", rc, stat, -1}
 }
 
+// NewReaderPathFile ...
 func NewReaderPathFile(path string, reader io.ReadCloser, stat os.FileInfo) (*ReaderFile, error) {
 	abspath, err := filepath.Abs(path)
 	if err != nil {
@@ -44,22 +48,27 @@ func NewReaderPathFile(path string, reader io.ReadCloser, stat os.FileInfo) (*Re
 	return &ReaderFile{abspath, reader, stat, -1}, nil
 }
 
+// AbsPath ...
 func (f *ReaderFile) AbsPath() string {
 	return f.abspath
 }
 
+// Read ...
 func (f *ReaderFile) Read(p []byte) (int, error) {
 	return f.reader.Read(p)
 }
 
+// Close ...
 func (f *ReaderFile) Close() error {
 	return f.reader.Close()
 }
 
+// Stat ...
 func (f *ReaderFile) Stat() os.FileInfo {
 	return f.stat
 }
 
+// Size ...
 func (f *ReaderFile) Size() (int64, error) {
 	if f.stat == nil {
 		if f.fsize >= 0 {
@@ -70,6 +79,7 @@ func (f *ReaderFile) Size() (int64, error) {
 	return f.stat.Size(), nil
 }
 
+// Seek ...
 func (f *ReaderFile) Seek(offset int64, whence int) (int64, error) {
 	if s, ok := f.reader.(io.Seeker); ok {
 		return s.Seek(offset, whence)

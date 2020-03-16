@@ -61,11 +61,12 @@ func (wf *WebFile) Close() error {
 	return wf.body.Close()
 }
 
-// TODO: implement
+// Seek ... TODO: implement
 func (wf *WebFile) Seek(offset int64, whence int) (int64, error) {
 	return 0, ErrNotSupported
 }
 
+// Size ...
 func (wf *WebFile) Size() (int64, error) {
 	if err := wf.start(); err != nil {
 		return 0, err
@@ -77,10 +78,12 @@ func (wf *WebFile) Size() (int64, error) {
 	return wf.contentLength, nil
 }
 
+// AbsPath ...
 func (wf *WebFile) AbsPath() string {
 	return wf.url.String()
 }
 
+// Stat ...
 func (wf *WebFile) Stat() os.FileInfo {
 	return nil
 }

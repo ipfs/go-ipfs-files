@@ -31,7 +31,7 @@ type serialIterator struct {
 	err error
 }
 
-// TODO: test/document limitations
+// NewSerialFile ... TODO: test/document limitations
 func NewSerialFile(path string, hidden bool, stat os.FileInfo) (Node, error) {
 	switch mode := stat.Mode(); {
 	case mode.IsRegular():

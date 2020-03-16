@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// TarWriter ...
 type TarWriter struct {
 	TarW *tar.Writer
 }
@@ -50,7 +51,7 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 	return nil
 }
 
-// WriteNode adds a node to the archive.
+// WriteFile adds a node to the archive.
 func (w *TarWriter) WriteFile(nd Node, fpath string) error {
 	switch nd := nd.(type) {
 	case *Symlink:
