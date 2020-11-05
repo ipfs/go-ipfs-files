@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // serialFile implements Node, and reads from a path on the OS filesystem.
@@ -154,6 +155,14 @@ func (f *serialFile) Size() (int64, error) {
 	})
 
 	return du, err
+}
+
+func (f *serialFile) Mode() os.FileMode {
+	panic("implement me")
+}
+
+func (f *serialFile) ModTime() time.Time {
+	panic("implement me")
 }
 
 var _ Directory = &serialFile{}

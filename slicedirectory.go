@@ -1,6 +1,10 @@
 package files
 
-import "sort"
+import (
+	"os"
+	"sort"
+	"time"
+)
 
 type fileEntry struct {
 	name string
@@ -49,6 +53,14 @@ func (it *sliceIterator) Err() error {
 // SliceFiles are always directories, and can't be read from or closed.
 type SliceFile struct {
 	files []DirEntry
+}
+
+func (f *SliceFile) Mode() os.FileMode {
+	panic("implement me")
+}
+
+func (f *SliceFile) ModTime() time.Time {
+	panic("implement me")
 }
 
 func NewMapDirectory(f map[string]Node) Directory {

@@ -6,8 +6,10 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/url"
+	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 const (
@@ -27,6 +29,14 @@ type multipartDirectory struct {
 
 	// part is the part describing the directory. It's nil when implicit.
 	part *multipart.Part
+}
+
+func (f *multipartDirectory) Mode() os.FileMode {
+	panic("implement me")
+}
+
+func (f *multipartDirectory) ModTime() time.Time {
+	panic("implement me")
 }
 
 type multipartWalker struct {
