@@ -5,15 +5,26 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 type mockFileInfo struct {
 	os.FileInfo
-	name string
+	name  string
+	mode  os.FileMode
+	mtime time.Time
 }
 
 func (m *mockFileInfo) Name() string {
 	return m.name
+}
+
+func (m *mockFileInfo) Mode() os.FileMode {
+	return m.mode
+}
+
+func (m *mockFileInfo) ModTime() time.Time {
+	return m.mtime
 }
 
 var _ os.FileInfo = &mockFileInfo{}

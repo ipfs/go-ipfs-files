@@ -56,11 +56,11 @@ type SliceFile struct {
 }
 
 func (f *SliceFile) Mode() os.FileMode {
-	panic("implement me")
+	return os.FileMode(0)
 }
 
 func (f *SliceFile) ModTime() time.Time {
-	panic("implement me")
+	return time.Time{}
 }
 
 func NewMapDirectory(f map[string]Node) Directory {

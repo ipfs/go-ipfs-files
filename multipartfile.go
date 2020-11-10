@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,8 +21,30 @@ const (
 	applicationSymlink   = "application/symlink"
 	applicationFile      = "application/octet-stream"
 
-	contentTypeHeader = "Content-Type"
+	contentTypeHeader        = "Content-Type"
+	contentDispositionHeader = "Content-Disposition"
 )
+
+type multiPartFileInfo struct {
+	mode  os.FileMode
+	mtime time.Time
+}
+
+func (fi *multiPartFileInfo) Name() string {
+	panic("not supported")
+}
+
+func (fi *multiPartFileInfo) Size() int64 {
+	panic("not supported")
+}
+
+func (fi *multiPartFileInfo) IsDir() bool {
+	panic("not supported")
+}
+
+func (fi *multiPartFileInfo) Mode() os.FileMode  { return fi.mode }
+func (fi *multiPartFileInfo) ModTime() time.Time { return fi.mtime }
+func (fi *multiPartFileInfo) Sys() interface{}   { return nil }
 
 type multipartDirectory struct {
 	path   string
@@ -96,6 +119,11 @@ func (w *multipartWalker) nextFile() (Node, error) {
 		}
 	}
 
+	var stat os.FileInfo
+	if cd := part.Header.Get(contentDispositionHeader); cd != "" {
+		stat = fileInfoFromContentDisposition(cd)
+	}
+
 	switch contentType {
 	case multipartFormdataType, applicationDirectory:
 		return &multipartDirectory{
@@ -109,12 +137,55 @@ func (w *multipartWalker) nextFile() (Node, error) {
 			return nil, err
 		}
 
-		return NewLinkFile(string(out), nil), nil
+		return NewLinkFile(string(out), stat), nil
 	default:
 		return &ReaderFile{
 			reader:  part,
 			abspath: part.Header.Get("abspath"),
+			stat:    stat,
 		}, nil
+	}
+}
+
+func fileInfoFromContentDisposition(cd string) os.FileInfo {
+	_, fields, err := mime.ParseMediaType(cd)
+	if err != nil {
+		return nil
+	}
+
+	name := fields["name"]
+	if name == "" {
+		return nil
+	}
+
+	i := strings.IndexByte(name, '?')
+	if i == -1 {
+		return nil
+	}
+
+	params, err := url.ParseQuery(name[i+1:])
+	if err != nil {
+		return nil
+	}
+
+	return parseFileInfoParams(params, err)
+}
+
+func parseFileInfoParams(params url.Values, err error) os.FileInfo {
+	mode, secs, nsecs := uint64(0), int64(0), int64(0)
+	if v := params["mode"]; v != nil {
+		mode, err = strconv.ParseUint(v[0], 8, 32)
+	}
+	if v := params["mtime"]; v != nil {
+		secs, err = strconv.ParseInt(v[0], 10, 64)
+	}
+	if v := params["mtime-nsecs"]; v != nil {
+		nsecs, err = strconv.ParseInt(v[0], 10, 64)
+	}
+
+	return &multiPartFileInfo{
+		mode:  os.FileMode(mode),
+		mtime: time.Unix(secs, nsecs),
 	}
 }
 
