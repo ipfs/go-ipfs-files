@@ -20,10 +20,16 @@ type ReaderFile struct {
 }
 
 func (f *ReaderFile) Mode() os.FileMode {
+	if f.stat == nil {
+		return 0
+	}
 	return f.stat.Mode()
 }
 
 func (f *ReaderFile) ModTime() time.Time {
+	if f.stat == nil {
+		return time.Time{}
+	}
 	return f.stat.ModTime()
 }
 
