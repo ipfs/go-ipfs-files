@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
+	"os"
 	"path"
 	"time"
 )
@@ -39,7 +40,20 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 		return err
 	}
 
-	if err := writeFileHeader(w.TarW, fpath, uint64(size)); err != nil {
+	mode, mtime, err := getFileMeta(f)
+	if err != nil {
+		return err
+	}
+
+	err = w.TarW.WriteHeader(&tar.Header{
+		Name:     fpath,
+		Size:     size,
+		Typeflag: tar.TypeReg,
+		Mode:     int64(mode),
+		ModTime:  mtime,
+	})
+
+	if err != nil {
 		return err
 	}
 
@@ -79,17 +93,6 @@ func writeDirHeader(w *tar.Writer, fpath string) error {
 	})
 }
 
-func writeFileHeader(w *tar.Writer, fpath string, size uint64) error {
-	return w.WriteHeader(&tar.Header{
-		Name:     fpath,
-		Size:     int64(size),
-		Typeflag: tar.TypeReg,
-		Mode:     0644,
-		ModTime:  time.Now(),
-		// TODO: set mode, dates, etc. when added to unixFS
-	})
-}
-
 func writeSymlinkHeader(w *tar.Writer, target, fpath string) error {
 	return w.WriteHeader(&tar.Header{
 		Name:     fpath,
@@ -97,4 +100,27 @@ func writeSymlinkHeader(w *tar.Writer, target, fpath string) error {
 		Mode:     0777,
 		Typeflag: tar.TypeSymlink,
 	})
+}
+
+func getFileMeta(f File) (os.FileMode, time.Time, error) {
+	var err error = nil
+	mode := f.Mode()
+	mtime := f.ModTime()
+
+	if mode == 0 {
+		switch nd := f.(type) {
+		case File:
+			mode = 0644
+		case Directory:
+			mode = 0777
+		default:
+			err = fmt.Errorf("mode for file type %T is not supported", nd)
+		}
+	}
+
+	if !mtime.IsZero() {
+		mtime = time.Now()
+	}
+
+	return mode, mtime, err
 }

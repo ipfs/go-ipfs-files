@@ -3,6 +3,7 @@ package files
 import (
 	"os"
 	"strings"
+	"time"
 )
 
 type Symlink struct {
@@ -16,6 +17,14 @@ func NewLinkFile(target string, stat os.FileInfo) File {
 	lf := &Symlink{Target: target, stat: stat}
 	lf.reader.Reset(lf.Target)
 	return lf
+}
+
+func (lf *Symlink) Mode() os.FileMode {
+	panic("Implement me")
+}
+
+func (lf *Symlink) ModTime() time.Time {
+	panic("Implement me")
 }
 
 func (lf *Symlink) Close() error {

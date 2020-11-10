@@ -3,8 +3,10 @@ package files
 import (
 	"io"
 	"mime/multipart"
+	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSliceFiles(t *testing.T) {
@@ -48,11 +50,27 @@ func TestReaderFiles(t *testing.T) {
 		t.Fatal("Expected EOF when reading after close")
 	}
 }
+
+func TestReaderFileStat(t *testing.T) {
+	reader := strings.NewReader("beep boop")
+	mode := os.FileMode(0754)
+	mtime := time.Date(2020, 11, 2, 12, 27, 35, 55555, time.UTC)
+	stat := &mockFileInfo{name: "test", mode: mode, mtime: mtime}
+
+	rf := NewReaderStatFile(reader, stat)
+	if rf.Mode() != mode {
+		t.Fatalf("Expected file mode to be [%v] but got [%v]", mode, rf.Mode())
+	}
+	if rf.ModTime() != mtime {
+		t.Fatalf("Expected file modified time to be [%v] but got [%v]", mtime, rf.ModTime())
+	}
+}
+
 func TestMultipartFiles(t *testing.T) {
 	data := `
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: file; filename="name"
+Content-Disposition: form-data; name="file-0?mode=0754&mtime=1604320500&mtime-nsecs=55555;ans=42"; filename="name"
 Some-Header: beep
 
 beep
