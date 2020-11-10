@@ -12,10 +12,10 @@ import (
 )
 
 // the HTTP Response header that provides the last modified timestamp
-const lastModifiedHeaderName = "Last-Modified"
+const LastModifiedHeaderName = "Last-Modified"
 
 // the HTTP Response header that provides the unix file mode
-const fileModeHeaderName = "X-FileMode"
+const FileModeHeaderName = "File-Mode"
 
 // WebFile is an implementation of File which reads it
 // from a Web URL (http). A GET request will be performed
@@ -62,19 +62,15 @@ func (wf *WebFile) start() error {
 }
 
 func (wf *WebFile) getResponseMetaData(resp *http.Response) {
-	ts := resp.Header.Get(lastModifiedHeaderName)
+	ts := resp.Header.Get(LastModifiedHeaderName)
 	if ts != "" {
-		if mtime, err := time.Parse(time.RFC1123, ts); err != nil {
-			fmt.Printf("failed to parse %s header: %s\n", lastModifiedHeaderName, err.Error())
-		} else {
+		if mtime, err := time.Parse(time.RFC1123, ts); err == nil {
 			wf.mtime = mtime
 		}
 	}
-	md := resp.Header.Get(fileModeHeaderName)
+	md := resp.Header.Get(FileModeHeaderName)
 	if md != "" {
-		if mode, err := strconv.ParseInt(md, 8, 32); err != nil {
-			fmt.Printf("failed to parse %s header: %s\n", fileModeHeaderName, err.Error())
-		} else {
+		if mode, err := strconv.ParseInt(md, 8, 32); err == nil {
 			wf.mode = os.FileMode(mode)
 		}
 	}
