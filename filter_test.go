@@ -27,6 +27,10 @@ func (m *mockFileInfo) ModTime() time.Time {
 	return m.mtime
 }
 
+func (m *mockFileInfo) Sys() interface{} {
+	return nil
+}
+
 var _ os.FileInfo = &mockFileInfo{}
 
 func TestFileFilter(t *testing.T) {

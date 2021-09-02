@@ -40,11 +40,7 @@ func TestMultiFileReaderToMultiFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	md, ok := mf.(Directory)
-	if !ok {
-		t.Fatal("Expected a directory")
-	}
-	it := md.Entries()
+	it := mf.Entries()
 
 	if !it.Next() || it.Name() != "beep.txt" {
 		t.Fatal("iterator didn't work as expected")
@@ -98,11 +94,7 @@ func TestMultiFileReaderToMultiFileSkip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	md, ok := mf.(Directory)
-	if !ok {
-		t.Fatal("Expected a directory")
-	}
-	it := md.Entries()
+	it := mf.Entries()
 
 	if !it.Next() || it.Name() != "beep.txt" {
 		t.Fatal("iterator didn't work as expected")
