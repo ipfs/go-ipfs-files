@@ -22,8 +22,7 @@ type Node interface {
 	Mode() os.FileMode
 
 	// ModTime returns the files last modification time.
-	//
-	// If the last modification time is unknown/unspecified the mtime is the Unix epoch (default timestamp).
+	// If the last modification time is unknown/unspecified `mtime` is zero.
 	ModTime() (mtime time.Time)
 
 	// Size returns size of this file (if this file is a directory, total size of
