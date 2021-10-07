@@ -1,19 +1,29 @@
 package files
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"syscall"
 )
+
+var ErrInvalidDirectoryEntry = errors.New("invalid directory entry name")
+var ErrPathExistsOverwrite = errors.New("path already exists and overwriting is not allowed")
 
 // WriteTo writes the given node to the local filesystem at fpath.
 func WriteTo(nd Node, fpath string) error {
+	if _, err := os.Lstat(fpath); err == nil {
+		return ErrPathExistsOverwrite
+	} else if !os.IsNotExist(err) {
+		return err
+	}
 	switch nd := nd.(type) {
 	case *Symlink:
 		return os.Symlink(nd.Target, fpath)
 	case File:
-		f, err := os.Create(fpath)
+		f, err := os.OpenFile(fpath, os.O_EXCL|os.O_CREATE|os.O_WRONLY|syscall.O_NOFOLLOW, 0666)
 		defer f.Close()
 		if err != nil {
 			return err
@@ -31,7 +41,14 @@ func WriteTo(nd Node, fpath string) error {
 
 		entries := nd.Entries()
 		for entries.Next() {
-			child := filepath.Join(fpath, entries.Name())
+			entryName := entries.Name()
+			if entryName == "" ||
+				entryName == "." ||
+				entryName == ".." ||
+				!isValidFilename(entryName) {
+				return ErrInvalidDirectoryEntry
+			}
+			child := filepath.Join(fpath, entryName)
 			if err := WriteTo(entries.Node(), child); err != nil {
 				return err
 			}
