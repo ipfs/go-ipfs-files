@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"syscall"
 )
 
 var ErrInvalidDirectoryEntry = errors.New("invalid directory entry name")
@@ -23,7 +22,7 @@ func WriteTo(nd Node, fpath string) error {
 	case *Symlink:
 		return os.Symlink(nd.Target, fpath)
 	case File:
-		f, err := os.OpenFile(fpath, os.O_EXCL|os.O_CREATE|os.O_WRONLY|syscall.O_NOFOLLOW, 0666)
+		f, err := os.OpenFile(fpath, os.O_EXCL|os.O_CREATE|os.O_WRONLY, 0666)
 		defer f.Close()
 		if err != nil {
 			return err
