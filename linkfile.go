@@ -20,11 +20,11 @@ func NewLinkFile(target string, stat os.FileInfo) File {
 }
 
 func (lf *Symlink) Mode() os.FileMode {
-	panic("Implement me")
+	return lf.stat.Mode()
 }
 
 func (lf *Symlink) ModTime() time.Time {
-	panic("Implement me")
+	return lf.stat.ModTime()
 }
 
 func (lf *Symlink) Close() error {

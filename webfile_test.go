@@ -19,7 +19,7 @@ func TestWebFile(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(LastModifiedHeaderName, mtime.Format(time.RFC1123))
 		w.Header().Add(FileModeHeaderName, strconv.FormatUint(uint64(mode), 8))
-		fmt.Fprintf(w, content)
+		fmt.Fprint(w, content)
 	}))
 	defer s.Close()
 
@@ -38,7 +38,7 @@ func TestWebFile(t *testing.T) {
 	if actual := wf.Mode(); actual != mode {
 		t.Fatalf("expected file mode %q but got 0%q", mode, strconv.FormatUint(uint64(actual), 8))
 	}
-	if actual := wf.ModTime(); actual != mtime {
+	if actual := wf.ModTime(); !actual.Equal(mtime) {
 		t.Fatalf("expected last modified time %q but got %q", mtime, actual)
 	}
 }

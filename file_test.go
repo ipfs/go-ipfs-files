@@ -70,32 +70,42 @@ func TestMultipartFiles(t *testing.T) {
 	data := `
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: form-data; name="file-0?mode=0754&mtime=1604320500&mtime-nsecs=55555;ans=42"; filename="name"
+Content-Disposition: form-data; name="file-0?mode=0754&mtime=1604320500&mtime-nsecs=55555;ans=42"; filename="file1"
 Some-Header: beep
 
 beep
 --Boundary!
 Content-Type: application/x-directory
-Content-Disposition: file; filename="dir"
+Content-Disposition: form-data; name="dir-0?mode=755&mtime=1604320500;ans=42"; filename="dir1"
 
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: file; filename="dir/nested"
+Content-Disposition: form-data; name="file"; filename="dir1/nested"
+
+some content
+--Boundary!
+Content-Type: text/plain
+Content-Disposition: form-data; name="file?mode=600"; filename="dir1/nested2"
 
 some content
 --Boundary!
 Content-Type: application/symlink
-Content-Disposition: file; filename="dir/simlynk"
+Content-Disposition: form-data; name="file-5"; filename="dir1/simlynk"
+
+anotherfile
+--Boundary!
+Content-Type: application/symlink
+Content-Disposition: form-data; name="file?mode=0754&mtime=1604320500"; filename="dir1/simlynk2"
 
 anotherfile
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: file; filename="implicit1/implicit2/deep_implicit"
+Content-Disposition: form-data; name="dir?mode=0644"; filename="implicit1/implicit2/deep_implicit"
 
 implicit file1
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: file; filename="implicit1/shallow_implicit"
+Content-Disposition: form-data; name="dir?mode=755&mtime=1604320500"; filename="implicit1/shallow_implicit"
 
 implicit file2
 --Boundary!--
@@ -112,12 +122,16 @@ implicit file2
 	CheckDir(t, dir, []Event{
 		{
 			kind:  TFile,
-			name:  "name",
+			name:  "file1",
 			value: "beep",
+			mode:  0754,
+			mtime: time.Unix(1604320500, 55555),
 		},
 		{
-			kind: TDirStart,
-			name: "dir",
+			kind:  TDirStart,
+			name:  "dir1",
+			mode:  0755,
+			mtime: time.Unix(1604320500, 0),
 		},
 		{
 			kind:  TFile,
@@ -125,9 +139,22 @@ implicit file2
 			value: "some content",
 		},
 		{
+			kind:  TFile,
+			name:  "nested2",
+			value: "some content",
+			mode:  0600,
+		},
+		{
 			kind:  TSymlink,
 			name:  "simlynk",
 			value: "anotherfile",
+		},
+		{
+			kind:  TSymlink,
+			name:  "simlynk2",
+			value: "anotherfile",
+			mode:  0754,
+			mtime: time.Unix(1604320500, 0),
 		},
 		{
 			kind: TDirEnd,
@@ -144,6 +171,7 @@ implicit file2
 			kind:  TFile,
 			name:  "deep_implicit",
 			value: "implicit file1",
+			mode:  0644,
 		},
 		{
 			kind: TDirEnd,
@@ -152,6 +180,8 @@ implicit file2
 			kind:  TFile,
 			name:  "shallow_implicit",
 			value: "implicit file2",
+			mode:  0755,
+			mtime: time.Unix(1604320500, 0),
 		},
 		{
 			kind: TDirEnd,

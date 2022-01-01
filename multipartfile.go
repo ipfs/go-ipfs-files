@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -25,41 +26,42 @@ const (
 	contentDispositionHeader = "Content-Disposition"
 )
 
+// multiPartFileInfo implements the `fs.FileInfo` interface for a file or
+// directory received in a `multipart.part`.
 type multiPartFileInfo struct {
+	name  string
 	mode  os.FileMode
 	mtime time.Time
 }
 
-func (fi *multiPartFileInfo) Name() string {
-	panic("not supported")
-}
-
-func (fi *multiPartFileInfo) Size() int64 {
-	panic("not supported")
-}
-
-func (fi *multiPartFileInfo) IsDir() bool {
-	panic("not supported")
-}
-
+func (fi *multiPartFileInfo) Name() string       { return fi.name }
 func (fi *multiPartFileInfo) Mode() os.FileMode  { return fi.mode }
 func (fi *multiPartFileInfo) ModTime() time.Time { return fi.mtime }
+func (fi *multiPartFileInfo) IsDir() bool        { return fi.mode.IsDir() }
 func (fi *multiPartFileInfo) Sys() interface{}   { return nil }
+func (fi *multiPartFileInfo) Size() int64        { panic("size for multipart file info is not supported") }
 
 type multipartDirectory struct {
 	path   string
 	walker *multipartWalker
+	stat   os.FileInfo
 
 	// part is the part describing the directory. It's nil when implicit.
 	part *multipart.Part
 }
 
 func (f *multipartDirectory) Mode() os.FileMode {
-	panic("implement me")
+	if f.stat != nil {
+		return f.stat.Mode()
+	}
+	return 0
 }
 
 func (f *multipartDirectory) ModTime() time.Time {
-	panic("implement me")
+	if f.stat != nil {
+		return f.stat.ModTime()
+	}
+	return time.Time{}
 }
 
 type multipartWalker struct {
@@ -119,17 +121,15 @@ func (w *multipartWalker) nextFile() (Node, error) {
 		}
 	}
 
-	var stat os.FileInfo
-	if cd := part.Header.Get(contentDispositionHeader); cd != "" {
-		stat = fileInfoFromContentDisposition(cd)
-	}
+	name := fileName(part)
 
 	switch contentType {
 	case multipartFormdataType, applicationDirectory:
 		return &multipartDirectory{
 			part:   part,
-			path:   fileName(part),
+			path:   name,
 			walker: w,
+			stat:   fileInfo(name, part),
 		}, nil
 	case applicationSymlink:
 		out, err := ioutil.ReadAll(part)
@@ -137,55 +137,13 @@ func (w *multipartWalker) nextFile() (Node, error) {
 			return nil, err
 		}
 
-		return NewLinkFile(string(out), stat), nil
+		return NewLinkFile(string(out), fileInfo(name, part)), nil
 	default:
 		return &ReaderFile{
 			reader:  part,
 			abspath: part.Header.Get("abspath"),
-			stat:    stat,
+			stat:    fileInfo(name, part),
 		}, nil
-	}
-}
-
-func fileInfoFromContentDisposition(cd string) os.FileInfo {
-	_, fields, err := mime.ParseMediaType(cd)
-	if err != nil {
-		return nil
-	}
-
-	name := fields["name"]
-	if name == "" {
-		return nil
-	}
-
-	i := strings.IndexByte(name, '?')
-	if i == -1 {
-		return nil
-	}
-
-	params, err := url.ParseQuery(name[i+1:])
-	if err != nil {
-		return nil
-	}
-
-	return parseFileInfoParams(params, err)
-}
-
-func parseFileInfoParams(params url.Values, err error) os.FileInfo {
-	mode, secs, nsecs := uint64(0), int64(0), int64(0)
-	if v := params["mode"]; v != nil {
-		mode, err = strconv.ParseUint(v[0], 8, 32)
-	}
-	if v := params["mtime"]; v != nil {
-		secs, err = strconv.ParseInt(v[0], 10, 64)
-	}
-	if v := params["mtime-nsecs"]; v != nil {
-		nsecs, err = strconv.ParseInt(v[0], 10, 64)
-	}
-
-	return &multiPartFileInfo{
-		mode:  os.FileMode(mode),
-		mtime: time.Unix(secs, nsecs),
 	}
 }
 
@@ -236,6 +194,44 @@ func (it *multipartIterator) Node() Node {
 	return it.curFile
 }
 
+// fileInfo constructs an `os.FileInfo` from a `multipart.part` serving
+// a file or directory.
+func fileInfo(name string, part *multipart.Part) os.FileInfo {
+	fi := multiPartFileInfo{name: filepath.Base(name)}
+	formName := part.FormName()
+
+	i := strings.IndexByte(formName, '?')
+	if i == -1 {
+		return &fi
+	}
+
+	params, err := url.ParseQuery(formName[i+1:])
+	if err != nil {
+		return nil
+	}
+
+	if v := params["mode"]; v != nil {
+		mode, err := strconv.ParseUint(v[0], 8, 32)
+		if err == nil {
+			fi.mode = os.FileMode(mode)
+		}
+	}
+
+	var secs, nsecs int64
+	if v := params["mtime"]; v != nil {
+		secs, err = strconv.ParseInt(v[0], 10, 64)
+		if err != nil {
+			return &fi
+		}
+	}
+	if v := params["mtime-nsecs"]; v != nil {
+		nsecs, _ = strconv.ParseInt(v[0], 10, 64)
+	}
+	fi.mtime = time.Unix(secs, nsecs)
+
+	return &fi
+}
+
 func (it *multipartIterator) Next() bool {
 	if it.f.walker.reader == nil || it.err != nil {
 		return false
@@ -273,9 +269,9 @@ func (it *multipartIterator) Next() bool {
 			}
 			return true
 		}
-		it.curName = name
 
 		// Finally, advance to the next file.
+		it.curName = name
 		it.curFile, it.err = it.f.walker.nextFile()
 
 		return it.err == nil

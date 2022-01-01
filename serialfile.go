@@ -158,11 +158,11 @@ func (f *serialFile) Size() (int64, error) {
 }
 
 func (f *serialFile) Mode() os.FileMode {
-	panic("implement me")
+	return f.stat.Mode()
 }
 
 func (f *serialFile) ModTime() time.Time {
-	panic("implement me")
+	return f.stat.ModTime()
 }
 
 var _ Directory = &serialFile{}
