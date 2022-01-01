@@ -88,7 +88,7 @@ func writeDirHeader(w *tar.Writer, fpath string) error {
 		Name:     fpath,
 		Typeflag: tar.TypeDir,
 		Mode:     0777,
-		ModTime:  time.Now(),
+		ModTime:  time.Now().Truncate(time.Second),
 		// TODO: set mode, dates, etc. when added to unixFS
 	})
 }
