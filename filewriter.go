@@ -22,7 +22,7 @@ func WriteTo(nd Node, fpath string) error {
 	case *Symlink:
 		return os.Symlink(nd.Target, fpath)
 	case File:
-		f, err := os.OpenFile(fpath, os.O_EXCL|os.O_CREATE|os.O_WRONLY, 0666)
+		f, err := createNewFile(fpath)
 		defer f.Close()
 		if err != nil {
 			return err

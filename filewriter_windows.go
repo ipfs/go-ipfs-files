@@ -3,7 +3,10 @@
 
 package files
 
-import "strings"
+import (
+	"os"
+	"strings"
+)
 
 var invalidChars = `<>:"/\|?*` + "\x00"
 
@@ -36,4 +39,8 @@ func isValidFilename(filename string) bool {
 	_, isReservedName := reservedNames[filename]
 	return !strings.ContainsAny(filename, invalidChars) &&
 		!isReservedName
+}
+
+func createNewFile(path string) (*os.File, error) {
+	return os.OpenFile(path, os.O_EXCL|os.O_CREATE|os.O_WRONLY, 0666)
 }
