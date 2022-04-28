@@ -95,7 +95,7 @@ Content-Disposition: form-data; name="file-5"; filename="dir1/simlynk"
 anotherfile
 --Boundary!
 Content-Type: application/symlink
-Content-Disposition: form-data; name="file?mode=0754&mtime=1604320500"; filename="dir1/simlynk2"
+Content-Disposition: form-data; name="file?mtime=1604320500"; filename="dir1/simlynk2"
 
 anotherfile
 --Boundary!
@@ -148,12 +148,13 @@ implicit file2
 			kind:  TSymlink,
 			name:  "simlynk",
 			value: "anotherfile",
+			mode:  0777,
 		},
 		{
 			kind:  TSymlink,
 			name:  "simlynk2",
 			value: "anotherfile",
-			mode:  0754,
+			mode:  0777,
 			mtime: time.Unix(1604320500, 0),
 		},
 		{

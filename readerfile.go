@@ -36,6 +36,10 @@ func NewBytesFile(b []byte) File {
 	return &ReaderFile{"", NewReaderFile(bytes.NewReader(b)), nil, int64(len(b))}
 }
 
+func NewBytesStatFile(b []byte, stat os.FileInfo) File {
+	return NewReaderStatFile(bytes.NewReader(b), stat)
+}
+
 func NewReaderFile(reader io.Reader) File {
 	return NewReaderStatFile(reader, nil)
 }

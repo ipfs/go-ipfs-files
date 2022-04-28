@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
-	"os"
 	"path"
 	"time"
 )
@@ -21,13 +20,13 @@ func NewTarWriter(w io.Writer) (*TarWriter, error) {
 }
 
 func (w *TarWriter) writeDir(f Directory, fpath string) error {
-	if err := writeDirHeader(w.TarW, fpath); err != nil {
+	if err := w.writeHeader(f, fpath, 0); err != nil {
 		return err
 	}
 
 	it := f.Entries()
 	for it.Next() {
-		if err := w.WriteFile(it.Node(), path.Join(fpath, it.Name())); err != nil {
+		if err := w.WriteNode(it.Node(), path.Join(fpath, it.Name())); err != nil {
 			return err
 		}
 	}
@@ -40,20 +39,7 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 		return err
 	}
 
-	mode, mtime, err := getFileMeta(f)
-	if err != nil {
-		return err
-	}
-
-	err = w.TarW.WriteHeader(&tar.Header{
-		Name:     fpath,
-		Size:     size,
-		Typeflag: tar.TypeReg,
-		Mode:     int64(mode),
-		ModTime:  mtime,
-	})
-
-	if err != nil {
+	if err = w.writeHeader(f, fpath, size); err != nil {
 		return err
 	}
 
@@ -65,10 +51,10 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 }
 
 // WriteNode adds a node to the archive.
-func (w *TarWriter) WriteFile(nd Node, fpath string) error {
+func (w *TarWriter) WriteNode(nd Node, fpath string) error {
 	switch nd := nd.(type) {
 	case *Symlink:
-		return writeSymlinkHeader(w.TarW, nd.Target, fpath)
+		return w.writeHeader(nd, fpath, 0)
 	case File:
 		return w.writeFile(nd, fpath)
 	case Directory:
@@ -83,44 +69,28 @@ func (w *TarWriter) Close() error {
 	return w.TarW.Close()
 }
 
-func writeDirHeader(w *tar.Writer, fpath string) error {
-	return w.WriteHeader(&tar.Header{
-		Name:     fpath,
-		Typeflag: tar.TypeDir,
-		Mode:     0777,
-		ModTime:  time.Now().Truncate(time.Second),
-		// TODO: set mode, dates, etc. when added to unixFS
-	})
-}
-
-func writeSymlinkHeader(w *tar.Writer, target, fpath string) error {
-	return w.WriteHeader(&tar.Header{
-		Name:     fpath,
-		Linkname: target,
-		Mode:     0777,
-		Typeflag: tar.TypeSymlink,
-	})
-}
-
-func getFileMeta(f File) (os.FileMode, time.Time, error) {
-	var err error = nil
-	mode := f.Mode()
-	mtime := f.ModTime()
-
-	if mode == 0 {
-		switch nd := f.(type) {
-		case File:
-			mode = 0644
-		case Directory:
-			mode = 0777
-		default:
-			err = fmt.Errorf("mode for file type %T is not supported", nd)
-		}
+func (w *TarWriter) writeHeader(n Node, fpath string, size int64) error {
+	hdr := &tar.Header{
+		Name: fpath,
+		Size: size,
+		Mode: int64(UnixPermsOrDefault(n)),
 	}
 
-	if !mtime.IsZero() {
-		mtime = time.Now()
+	switch nd := n.(type) {
+	case *Symlink:
+		hdr.Typeflag = tar.TypeSymlink
+		hdr.Linkname = nd.Target
+	case Directory:
+		hdr.Typeflag = tar.TypeDir
+	default:
+		hdr.Typeflag = tar.TypeReg
 	}
 
-	return mode, mtime, err
+	if m := n.ModTime(); m.IsZero() {
+		hdr.ModTime = time.Now()
+	} else {
+		hdr.ModTime = m
+	}
+
+	return w.TarW.WriteHeader(hdr)
 }

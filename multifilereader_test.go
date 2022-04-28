@@ -14,18 +14,18 @@ func getTestMultiFileReader(t *testing.T) *MultiFileReader {
 	sf := NewMapDirectory(map[string]Node{
 		"file.txt": NewReaderStatFile(
 			strings.NewReader(text),
-			&mockFileInfo{name: "test1", mode: 0, mtime: time.Time{}}),
+			&mockFileInfo{name: "file.txt", mode: 0, mtime: time.Time{}}),
 		"boop": NewMapDirectory(map[string]Node{
 			"a.txt": NewReaderStatFile(
 				strings.NewReader("bleep"),
-				&mockFileInfo{name: "test2", mode: 0744, mtime: time.Time{}}),
+				&mockFileInfo{name: "a.txt", mode: 0744, mtime: time.Time{}}),
 			"b.txt": NewReaderStatFile(
 				strings.NewReader("bloop"),
-				&mockFileInfo{name: "test3", mode: 0666, mtime: time.Unix(1604320500, 0)}),
+				&mockFileInfo{name: "b.txt", mode: 0666, mtime: time.Unix(1604320500, 0)}),
 		}),
 		"beep.txt": NewReaderStatFile(
 			strings.NewReader("beep"),
-			&mockFileInfo{name: "test4", mode: 0754, mtime: time.Unix(1604320500, 55555)}),
+			&mockFileInfo{name: "beep.txt", mode: 0754, mtime: time.Unix(1604320500, 55555)}),
 	})
 
 	// testing output by reading it with the go stdlib "mime/multipart" Reader

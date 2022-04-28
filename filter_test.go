@@ -13,6 +13,7 @@ type mockFileInfo struct {
 	name  string
 	mode  os.FileMode
 	mtime time.Time
+	size  int64
 }
 
 func (m *mockFileInfo) Name() string {
@@ -25,6 +26,10 @@ func (m *mockFileInfo) Mode() os.FileMode {
 
 func (m *mockFileInfo) ModTime() time.Time {
 	return m.mtime
+}
+
+func (m *mockFileInfo) Size() int64 {
+	return m.size
 }
 
 func (m *mockFileInfo) Sys() interface{} {

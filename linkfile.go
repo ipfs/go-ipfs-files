@@ -8,23 +8,26 @@ import (
 
 type Symlink struct {
 	Target string
-
-	stat   os.FileInfo
+	mtime  time.Time
 	reader strings.Reader
 }
 
 func NewLinkFile(target string, stat os.FileInfo) File {
-	lf := &Symlink{Target: target, stat: stat}
+	return NewSymlinkFile(target, stat.ModTime())
+}
+
+func NewSymlinkFile(target string, mtime time.Time) File {
+	lf := &Symlink{Target: target, mtime: mtime}
 	lf.reader.Reset(lf.Target)
 	return lf
 }
 
 func (lf *Symlink) Mode() os.FileMode {
-	return lf.stat.Mode()
+	return os.ModeSymlink | os.ModePerm
 }
 
 func (lf *Symlink) ModTime() time.Time {
-	return lf.stat.ModTime()
+	return lf.mtime
 }
 
 func (lf *Symlink) Close() error {

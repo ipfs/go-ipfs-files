@@ -54,8 +54,8 @@ func CheckDir(t *testing.T, dir Directory, expected []Event) {
 				t.Fatalf("[%d] expected filename to be %q", i, next.name)
 			}
 
-			if it.Node().Mode() != next.mode {
-				t.Fatalf("[%d] expected mode for '%s' to be %O", i, it.Name(), next.mode)
+			if it.Node().Mode()&os.ModePerm != next.mode {
+				t.Fatalf("[%d] expected mode for '%s' to be %O, got %O", i, it.Name(), next.mode, it.Node().Mode())
 			}
 
 			if !next.mtime.IsZero() && !it.Node().ModTime().Equal(next.mtime) {
