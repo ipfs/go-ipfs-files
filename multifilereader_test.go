@@ -172,7 +172,7 @@ func TestCommonPrefix(t *testing.T) {
 
 	CheckDir(t, reader, []Event{
 		{
-			kind: TDirStart,
+			kind: TDirectory,
 			name: "boop",
 		},
 		{

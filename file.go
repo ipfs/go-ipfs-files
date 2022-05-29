@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"os"
+
+	"github.com/ipfs/go-cid"
 )
 
 var (
@@ -39,6 +41,49 @@ type DirEntry interface {
 
 	// Node returns the file referenced by this DirEntry
 	Node() Node
+}
+
+// FileType is an enum of possible UnixFS file types.
+type FileType int32
+
+const (
+	// TUnknown means the file type isn't known (e.g., it hasn't been
+	// resolved).
+	TUnknown FileType = iota
+	// TFile is a regular file.
+	TFile
+	// TDirectory is a directory.
+	TDirectory
+	// TSymlink is a symlink.
+	TSymlink
+	// TDirEnd indicates the implict end of a directory listing.
+	TDirEnd
+)
+
+func (t FileType) String() string {
+	switch t {
+	case TUnknown:
+		return "unknown"
+	case TFile:
+		return "file"
+	case TDirectory:
+		return "directory"
+	case TSymlink:
+		return "symlink"
+	default:
+		return "<unknown file type>"
+	}
+}
+
+// An ExtendedDirectoryEntry exposes unixfs semenatics for a directory entry,
+// abstracting the concrete semantics in interface-go-ipfs-core.
+type ExtendedDirEntry interface {
+	DirEntry
+	Cid() cid.Cid
+
+	Size() (uint64, error)   // The size of the file in bytes (or the size of the symlink).
+	Type() (FileType, error) // The type of the file.
+	Target() (string, error) // The symlink target (if a symlink).
 }
 
 // DirIterator is a iterator over directory entries.

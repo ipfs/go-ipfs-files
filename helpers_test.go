@@ -5,17 +5,8 @@ import (
 	"testing"
 )
 
-type Kind int
-
-const (
-	TFile Kind = iota
-	TSymlink
-	TDirStart
-	TDirEnd
-)
-
 type Event struct {
-	kind  Kind
+	kind  FileType
 	name  string
 	value string
 }
@@ -87,7 +78,7 @@ func CheckDir(t *testing.T, dir Directory, expected []Event) {
 					)
 					continue
 				}
-			case TDirStart:
+			case TDirectory:
 				mf, ok := it.Node().(Directory)
 				if !ok {
 					t.Fatalf(

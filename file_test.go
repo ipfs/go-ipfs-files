@@ -98,7 +98,7 @@ implicit file2
 			value: "beep",
 		},
 		{
-			kind: TDirStart,
+			kind: TDirectory,
 			name: "dir",
 		},
 		{
@@ -115,11 +115,11 @@ implicit file2
 			kind: TDirEnd,
 		},
 		{
-			kind: TDirStart,
+			kind: TDirectory,
 			name: "implicit1",
 		},
 		{
-			kind: TDirStart,
+			kind: TDirectory,
 			name: "implicit2",
 		},
 		{
