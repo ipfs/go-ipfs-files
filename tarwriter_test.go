@@ -15,7 +15,7 @@ func TestTarWriter(t *testing.T) {
 			"b.txt": NewBytesFile([]byte("bloop")),
 		}, &mockFileInfo{name: "", mode: 0750, mtime: time.Unix(6600000000, 0)}),
 		"beep.txt": NewBytesStatFile([]byte("beep"),
-			&mockFileInfo{name: "beep.txt", size: 4, mode: 0766, mtime: time.Unix(1604320500, 0)}),
+			&mockFileInfo{name: "beep.txt", size: 4, mode: 0766, mtime: time.Unix(1604320500, 54321)}),
 		"boop-sl": NewSymlinkFile("boop", time.Unix(6600050000, 0)),
 	})
 
@@ -24,6 +24,7 @@ func TestTarWriter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	tw.SetFormat(tar.FormatPAX)
 	tr := tar.NewReader(pr)
 
 	go func() {
@@ -54,7 +55,7 @@ func TestTarWriter(t *testing.T) {
 			if interval < -delta || interval > delta {
 				t.Errorf("expected timestamp to be current: %s", cur.ModTime)
 			}
-		} else if cur.ModTime.Unix() != mtime.Unix() {
+		} else if cur.ModTime.UnixNano() != mtime.UnixNano() {
 			t.Errorf("got wrong timestamp: %s != %s", cur.ModTime, mtime)
 
 		}
@@ -68,7 +69,7 @@ func TestTarWriter(t *testing.T) {
 	if cur, err = tr.Next(); err != nil {
 		t.Fatal(err)
 	}
-	checkHeader("beep.txt", tar.TypeReg, 4, 0766, time.Unix(1604320500, 0))
+	checkHeader("beep.txt", tar.TypeReg, 4, 0766, time.Unix(1604320500, 54321))
 
 	if cur, err = tr.Next(); err != nil {
 		t.Fatal(err)
