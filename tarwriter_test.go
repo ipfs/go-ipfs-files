@@ -51,7 +51,7 @@ func TestTarWriter(t *testing.T) {
 			t.Errorf("got wrong mode: %d != %d", cur.Mode, mode)
 		}
 		if mtime.IsZero() {
-			interval := time.Now().Sub(cur.ModTime)
+			interval := time.Since(cur.ModTime)
 			if interval < -delta || interval > delta {
 				t.Errorf("expected timestamp to be current: %s", cur.ModTime)
 			}
