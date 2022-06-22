@@ -13,7 +13,11 @@ type Symlink struct {
 }
 
 func NewLinkFile(target string, stat os.FileInfo) File {
-	return NewSymlinkFile(target, stat.ModTime())
+	mtime := time.Time{}
+	if stat != nil {
+		mtime = stat.ModTime()
+	}
+	return NewSymlinkFile(target, mtime)
 }
 
 func NewSymlinkFile(target string, mtime time.Time) File {
