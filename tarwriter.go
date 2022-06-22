@@ -9,13 +9,15 @@ import (
 )
 
 type TarWriter struct {
-	TarW *tar.Writer
+	TarW   *tar.Writer
+	format tar.Format
 }
 
 // NewTarWriter wraps given io.Writer into a new tar writer
 func NewTarWriter(w io.Writer) (*TarWriter, error) {
 	return &TarWriter{
-		TarW: tar.NewWriter(w),
+		TarW:   tar.NewWriter(w),
+		format: tar.FormatUnknown,
 	}, nil
 }
 
@@ -71,9 +73,10 @@ func (w *TarWriter) Close() error {
 
 func (w *TarWriter) writeHeader(n Node, fpath string, size int64) error {
 	hdr := &tar.Header{
-		Name: fpath,
-		Size: size,
-		Mode: int64(UnixPermsOrDefault(n)),
+		Format: w.format,
+		Name:   fpath,
+		Size:   size,
+		Mode:   int64(UnixPermsOrDefault(n)),
 	}
 
 	switch nd := n.(type) {
@@ -93,4 +96,8 @@ func (w *TarWriter) writeHeader(n Node, fpath string, size int64) error {
 	}
 
 	return w.TarW.WriteHeader(hdr)
+}
+
+func (w *TarWriter) SetFormat(format tar.Format) {
+	w.format = format
 }
