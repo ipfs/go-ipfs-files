@@ -59,7 +59,7 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 }
 
 func validateTarFilePath(baseDir, fpath string) bool {
-	// Ensure the filepath has no ".", "..", etc within the known filepath.
+	// Ensure the filepath has no ".", "..", etc within the known root directory.
 	fpath = path.Clean(fpath)
 
 	// If we have a non-empty baseDir, check if the filepath starts with baseDir.
