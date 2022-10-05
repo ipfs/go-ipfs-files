@@ -2,14 +2,22 @@ package files
 
 import (
 	"archive/tar"
+	"errors"
 	"fmt"
 	"io"
 	"path"
+	"strings"
 	"time"
 )
 
+var (
+	ErrUnixFSPathOutsideRoot = errors.New("relative UnixFS paths outside the root are now allowed, use CAR instead")
+)
+
 type TarWriter struct {
-	TarW *tar.Writer
+	TarW       *tar.Writer
+	baseDirSet bool
+	baseDir    string
 }
 
 // NewTarWriter wraps given io.Writer into a new tar writer
@@ -50,8 +58,38 @@ func (w *TarWriter) writeFile(f File, fpath string) error {
 	return nil
 }
 
+func validateTarFilePath(baseDir, fpath string) bool {
+	// Ensure the filepath has no ".", "..", etc within the known filepath.
+	fpath = path.Clean(fpath)
+
+	// If we have a non-empty baseDir, check if the filepath starts with baseDir.
+	// If not, we can exclude it immediately. For 'ipfs get' and for the gateway,
+	// the baseDir would be '{cid}.tar'.
+	if baseDir != "" && !strings.HasPrefix(path.Clean(fpath), baseDir) {
+		return false
+	}
+
+	// If there is no defined baseDir, i.e., if there's multiple files in the
+	// root, check if paths contain elements that would otherwise make them fall
+	// outside the root.
+	if strings.Contains(fpath, "..") {
+		return false
+	}
+
+	return true
+}
+
 // WriteNode adds a node to the archive.
 func (w *TarWriter) WriteFile(nd Node, fpath string) error {
+	if !w.baseDirSet {
+		w.baseDirSet = true // Use a variable for this as baseDir may be an empty string.
+		w.baseDir = fpath
+	}
+
+	if !validateTarFilePath(w.baseDir, fpath) {
+		return ErrUnixFSPathOutsideRoot
+	}
+
 	switch nd := nd.(type) {
 	case *Symlink:
 		return writeSymlinkHeader(w.TarW, nd.Target, fpath)
