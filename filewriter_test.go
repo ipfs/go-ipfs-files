@@ -2,10 +2,11 @@ package files
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWriteTo(t *testing.T) {
@@ -18,7 +19,7 @@ func TestWriteTo(t *testing.T) {
 			"a": NewBytesFile([]byte("foobar")),
 		}),
 	})
-	tmppath, err := ioutil.TempDir("", "files-test")
+	tmppath, err := os.MkdirTemp("", "files-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +59,7 @@ func TestWriteTo(t *testing.T) {
 				return fmt.Errorf("expected a directory at %q", rpath)
 			}
 		} else {
-			actual, err := ioutil.ReadFile(cpath)
+			actual, err := os.ReadFile(cpath)
 			if err != nil {
 				return err
 			}
@@ -74,4 +75,26 @@ func TestWriteTo(t *testing.T) {
 	if len(expected) > 0 {
 		t.Fatalf("failed to find: %#v", expected)
 	}
+}
+
+func TestDontAllowOverwrite(t *testing.T) {
+	tmppath, err := os.MkdirTemp("", "files-test")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmppath)
+
+	path := filepath.Join(tmppath, "output")
+
+	// Check we can actually write to the output path before trying invalid entries
+	// and leave an existing entry to test overwrite protection.
+	assert.NoError(t, WriteTo(NewMapDirectory(map[string]Node{
+		"exisiting-entry": NewBytesFile(nil),
+	}), path))
+
+	assert.Equal(t, ErrPathExistsOverwrite, WriteTo(NewBytesFile(nil), filepath.Join(path)))
+	assert.Equal(t, ErrPathExistsOverwrite, WriteTo(NewBytesFile(nil), filepath.Join(path, "exisiting-entry")))
+	// The directory in `path` has already been created so this should fail too:
+	assert.Equal(t, ErrPathExistsOverwrite, WriteTo(NewMapDirectory(map[string]Node{
+		"any-name": NewBytesFile(nil),
+	}), filepath.Join(path)))
+	os.RemoveAll(path)
 }

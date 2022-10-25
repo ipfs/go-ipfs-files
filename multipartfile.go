@@ -2,7 +2,6 @@ package files
 
 import (
 	"io"
-	"io/ioutil"
 	"mime"
 	"mime/multipart"
 	"net/url"
@@ -132,7 +131,7 @@ func (w *multipartWalker) nextFile() (Node, error) {
 			stat:   fileInfo(name, part),
 		}, nil
 	case applicationSymlink:
-		out, err := ioutil.ReadAll(part)
+		out, err := io.ReadAll(part)
 		if err != nil {
 			return nil, err
 		}

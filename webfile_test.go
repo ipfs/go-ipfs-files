@@ -2,7 +2,7 @@ package files
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -28,7 +28,7 @@ func TestWebFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	wf := NewWebFile(u)
-	body, err := ioutil.ReadAll(wf)
+	body, err := io.ReadAll(wf)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestWebFile_notFound(t *testing.T) {
 		t.Fatal(err)
 	}
 	wf := NewWebFile(u)
-	_, err = ioutil.ReadAll(wf)
+	_, err = io.ReadAll(wf)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -81,7 +81,7 @@ func TestWebFileSize(t *testing.T) {
 		t.Errorf("expected size to be %d, got %d", len(body), size)
 	}
 
-	actual, err := ioutil.ReadAll(wf1)
+	actual, err := io.ReadAll(wf1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestWebFileSize(t *testing.T) {
 	// Read size after reading file.
 
 	wf2 := NewWebFile(u)
-	actual, err = ioutil.ReadAll(wf2)
+	actual, err = io.ReadAll(wf2)
 	if err != nil {
 		t.Fatal(err)
 	}
