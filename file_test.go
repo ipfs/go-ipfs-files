@@ -70,13 +70,13 @@ func TestMultipartFiles(t *testing.T) {
 	data := `
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: form-data; name="file-0?mode=0754&mtime=1604320500&mtime-nsecs=55555;ans=42"; filename="file1"
+Content-Disposition: form-data; name="file-0?mode=0754&mtime=1604320500&mtime-nsecs=55555"; filename="file1"
 Some-Header: beep
 
 beep
 --Boundary!
 Content-Type: application/x-directory
-Content-Disposition: form-data; name="dir-0?mode=755&mtime=1604320500;ans=42"; filename="dir1"
+Content-Disposition: form-data; name="dir-0?mode=755&mtime=1604320500"; ans=42; filename="dir1"
 
 --Boundary!
 Content-Type: text/plain
@@ -85,7 +85,7 @@ Content-Disposition: form-data; name="file"; filename="dir1/nested"
 some content
 --Boundary!
 Content-Type: text/plain
-Content-Disposition: form-data; name="file?mode=600"; filename="dir1/nested2"
+Content-Disposition: form-data; name="file?mode=600"; filename="dir1/nested2"; ans=42
 
 some content
 --Boundary!
