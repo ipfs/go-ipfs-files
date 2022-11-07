@@ -123,7 +123,7 @@ func TestTarWriterFailsFileOutsideRoot(t *testing.T) {
 
 	defer tw.Close()
 	if err := tw.WriteFile(tf, ""); !errors.Is(err, ErrUnixFSPathOutsideRoot) {
-		t.Error(err)
+		t.Errorf("unexpected error, wanted: %v; got: %v", ErrUnixFSPathOutsideRoot, err)
 	}
 }
 
@@ -144,6 +144,6 @@ func TestTarWriterFailsFileOutsideRootWithBaseDir(t *testing.T) {
 
 	defer tw.Close()
 	if err := tw.WriteFile(tf, "test.tar"); !errors.Is(err, ErrUnixFSPathOutsideRoot) {
-		t.Error(err)
+		t.Errorf("unexpected error, wanted: %v; got: %v", ErrUnixFSPathOutsideRoot, err)
 	}
 }

@@ -69,10 +69,9 @@ func validateTarFilePath(baseDir, fpath string) bool {
 		return false
 	}
 
-	// If there is no defined baseDir, i.e., if there's multiple files in the
-	// root, check if paths contain elements that would otherwise make them fall
-	// outside the root.
-	if strings.Contains(fpath, "..") {
+	// Otherwise, check if the path starts with '..' which would make it fall
+	// outside the root path. This works since the path has already been cleaned.
+	if strings.HasPrefix(fpath, "..") {
 		return false
 	}
 
