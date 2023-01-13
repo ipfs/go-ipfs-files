@@ -1,3 +1,5 @@
+> ## ⚠️ This repository has been moved to https://github.com/ipfs/go-libipfs/tree/main/files.
+
 # go-ipfs-files
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
