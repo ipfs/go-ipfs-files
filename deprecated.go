@@ -9,57 +9,97 @@ import (
 
 // Errors
 var (
-	ErrNotDirectory          = files.ErrNotDirectory
-	ErrNotReader             = files.ErrNotReader
-	ErrNotSupported          = files.ErrNotSupported
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ErrNotDirectory = files.ErrNotDirectory
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ErrNotReader = files.ErrNotReader
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ErrNotSupported = files.ErrNotSupported
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
 	ErrInvalidDirectoryEntry = files.ErrInvalidDirectoryEntry
-	ErrPathExistsOverwrite   = files.ErrPathExistsOverwrite
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ErrPathExistsOverwrite = files.ErrPathExistsOverwrite
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
 	ErrUnixFSPathOutsideRoot = files.ErrUnixFSPathOutsideRoot
 )
 
 // Interfaces
 type (
-	Node        = files.Node
-	File        = files.File
-	DirEntry    = files.DirEntry
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	Node = files.Node
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	File = files.File
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	DirEntry = files.DirEntry
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
 	DirIterator = files.DirIterator
-	Directory   = files.Directory
-	FileInfo    = files.FileInfo
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	Directory = files.Directory
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	FileInfo = files.FileInfo
 )
 
 // Structs
 type (
-	Filter          = files.Filter
-	Symlink         = files.Symlink
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	Filter = files.Filter
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	Symlink = files.Symlink
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
 	MultiFileReader = files.MultiFileReader
 	ReaderFile      = files.ReaderFile
-	SliceFile       = files.SliceFile
-	TarWriter       = files.TarWriter
-	WebFile         = files.WebFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	SliceFile = files.SliceFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	TarWriter = files.TarWriter
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	WebFile = files.WebFile
 )
 
 // Helpers
 var (
-	WriteTo                 = files.WriteTo
-	NewFilter               = files.NewFilter
-	NewLinkFile             = files.NewLinkFile
-	ToSymlink               = files.ToSymlink
-	NewMultiFileReader      = files.NewMultiFileReader
-	NewFileFromPartReader   = files.NewFileFromPartReader
-	NewBytesFile            = files.NewBytesFile
-	NewReaderFile           = files.NewReaderFile
-	NewReaderStatFile       = files.NewReaderStatFile
-	NewReaderPathFile       = files.NewReaderPathFile
-	NewSerialFile           = files.NewSerialFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	WriteTo = files.WriteTo
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewFilter = files.NewFilter
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewLinkFile = files.NewLinkFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ToSymlink = files.ToSymlink
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewMultiFileReader = files.NewMultiFileReader
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewFileFromPartReader = files.NewFileFromPartReader
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewBytesFile = files.NewBytesFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewReaderFile = files.NewReaderFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewReaderStatFile = files.NewReaderStatFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewReaderPathFile = files.NewReaderPathFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewSerialFile = files.NewSerialFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
 	NewSerialFileWithFilter = files.NewSerialFileWithFilter
-	FileEntry               = files.FileEntry
-	NewMapDirectory         = files.NewMapDirectory
-	NewSliceDirectory       = files.NewSliceDirectory
-	NewTarWriter            = files.NewTarWriter
-	ToFile                  = files.ToFile
-	ToDir                   = files.ToDir
-	FileFromEntry           = files.FileFromEntry
-	DirFromEntry            = files.DirFromEntry
-	Walk                    = files.Walk
-	NewWebFile              = files.NewWebFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	FileEntry = files.FileEntry
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewMapDirectory = files.NewMapDirectory
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewSliceDirectory = files.NewSliceDirectory
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewTarWriter = files.NewTarWriter
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ToFile = files.ToFile
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	ToDir = files.ToDir
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	FileFromEntry = files.FileFromEntry
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	DirFromEntry = files.DirFromEntry
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	Walk = files.Walk
+	// Deprecated: moved to github.com/ipfs/go-libipfs/files
+	NewWebFile = files.NewWebFile
 )
