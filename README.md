@@ -1,4 +1,4 @@
-> ## ⚠️ This repository has been moved to https://github.com/ipfs/go-libipfs/tree/main/files.
+> ## ⚠️ This repository has been moved to https://github.com/ipfs/boxo/tree/main/files.
 
 # go-ipfs-files
 
@@ -30,4 +30,3 @@ This repository falls under the IPFS [Code of Conduct](https://github.com/ipfs/c
 ## License
 
 MIT
-
